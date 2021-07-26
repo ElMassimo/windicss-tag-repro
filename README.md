@@ -1,7 +1,6 @@
 # Windi CSS Bug Reproduction
 
-This application demonstrates a problem in the CSS generation where HTML tags
-and certain JS variables are parsed incorrectly as CSS classes.
+This application demonstrates a problem in the CSS generation.
 
 ## Replication Steps 🐞
 
@@ -9,39 +8,26 @@ and certain JS variables are parsed incorrectly as CSS classes.
 - Build the application with `pnpm build`
 - Check the generated `.css` asset file in `dist/assets`
 
-### Unexpected CSS rules
+### Unexpected CSS rule
 
-1. The `animate` SVG element is detected as a CSS class
+1. The `http-equiv="content-type"` meta header is interpreted as the `content` utility.
+
+  ```html
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  ```
 
   ```css
-  .\<animate {
-      -webkit-animation-iteration-count: 1;
-      aniamtion-iteration-count: 1
+  .content-type {
+    content: "type"
   }
   ```
 
-  Notice the typo in `animation-iteration-count`. Fixed in https://github.com/windicss/windicss/pull/400.
-
-2. A JS expression is detected as a CSS class
+2. Having `.content-type` inside the HTML content generates a escaped version of it:
 
   ```css
-  .duration\.value {
-      -webkit-transition-duration: 150ms;
-      -o-transition-duration: 150ms;
-      transition-duration: 150ms
+  .\.content-type {
+    content: "type"
   }
   ```
 
-3. A variable interpolated in the template is detected as a CSS class
-
-  ```css
-  .duration {
-      -webkit-transition-duration: 150ms;
-      -o-transition-duration: 150ms;
-      transition-duration: 150ms
-  }
-  ```
-
-### Expected Behavior
-
-None of these rules should be generated.
+  Probably caused by the same "expression" bug as mentioned in https://github.com/windicss/vite-plugin-windicss/issues/213.
